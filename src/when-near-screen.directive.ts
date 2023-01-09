@@ -22,6 +22,7 @@ const isElementVisibleOnScreen = (
 export class WhenNearScreenDirective extends AsyncDirective {
   private _initialized: boolean = false;
   private _whenFn!: () => TemplateResult;
+  private _whenFnResolved: TemplateResult | undefined;
 
   private _destroy$: Subject<void> = new Subject<void>();
 
@@ -38,12 +39,16 @@ export class WhenNearScreenDirective extends AsyncDirective {
       )
       .subscribe(() => {
         console.log('should update view, but doesnt')
-        this.setValue(this._whenFn());
+        this._whenFnResolved = this._whenFn();
+        this.setValue(this._whenFnResolved);
       });
   }
 
   public render(whenFn: () => TemplateResult, orElseFn?: () => TemplateResult): TemplateResult {
     this._whenFn = whenFn;
+    if (this._whenFnResolved){
+      return this._whenFnResolved
+    }
     if (!this._initialized) {
       this._init();
       this._initialized = true;
